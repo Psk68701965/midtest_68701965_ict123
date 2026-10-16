@@ -69,7 +69,7 @@
               </div>
               <div class="mb-3">
                 <label class="form-label">เบอร์โทร</label>
-                <input v-model="editStudent.phone" class="text" required></input>
+                <input v-model="editStudent.phone" type="text" class="form-control" required></input>
               </div>
               <div class="mb-3">
                 <label class="form-label">อีเมล</label>
