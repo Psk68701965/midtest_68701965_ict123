@@ -1,5 +1,10 @@
 <?php
-include 'student_db.sql';
+$conn = new PDO(
+    'mysql:host=127.0.0.1;dbname=student_db;charset=utf8mb4',
+    'root',
+    ''
+);
+$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
@@ -52,7 +57,7 @@ try {
             exit;
         }
 
-        $stmt = $conn->prepare("INSERT INTO contacts (student_id,first_name, last_name,phone, email)
+        $stmt = $conn->prepare("INSERT INTO students (student_id,first_name, last_name,phone, email)
                                 VALUES (:student_id, :first_name, :last_name, :phone, :email)");
 
         $stmt->bindParam(":student_id", $data["student_id"]);
@@ -85,7 +90,7 @@ try {
                     last_name = :last_name,
                     phone = :phone,
                     email = :email
-                WHERE contact_id = :id";
+                WHERE student_id = :current_student_id";
 
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":first_name", $data["first_name"]);
@@ -93,6 +98,8 @@ try {
         $stmt->bindParam(":phone", $data["phone"]);
         $stmt->bindParam(":email", $data["email"]);
         $stmt->bindParam(":student_id", $student_id, PDO::PARAM_INT);
+        $current_student_id = intval($data["current_student_id"] ?? $data["student_id"]);
+        $stmt->bindParam(":current_student_id", $current_student_id, PDO::PARAM_INT);
 
         if ($stmt->execute()) {
             echo json_encode(["success" => true, "message" => "แก้ไขข้อมูลนักศึกษาเรียบร้อย"]);

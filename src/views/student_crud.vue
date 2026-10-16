@@ -31,7 +31,7 @@
               แก้ไข
             </button>
             |
-            <button class="btn btn-danger btn-sm" @click="deleteContact(item.student_id)">
+            <button class="btn btn-danger btn-sm" @click="deleteStudent(item.student_id)">
               ลบ
             </button>
           </td>
@@ -39,7 +39,7 @@
       </tbody>
     </table>
 
-    <div v-if="!loading && contacts.length === 0" class="alert alert-info">
+    <div v-if="!loading && students.length === 0" class="alert alert-info">
       ไม่มีข้อมูลนักศึกษา
     </div>
 
@@ -56,20 +56,24 @@
           <div class="modal-body">
             <form @submit.prevent="saveStudent">
               <div class="mb-3">
+                <label class="form-label">รหัสนักศึกษา</label>
+                <input v-model="editStudent.student_id" type="text" class="form-control" required>
+              </div>
+              <div class="mb-3">
                 <label class="form-label">ชื่อ</label>
-                <input v-model="editContact.first_name" type="text" class="form-control" required>
+                <input v-model="editStudent.first_name" type="text" class="form-control" required>
               </div>
               <div class="mb-3">
                 <label class="form-label">นามสกุล</label>
-                <input v-model="editContact.last_name" type="text" class="form-control" required>
+                <input v-model="editStudent.last_name" type="text" class="form-control" required>
               </div>
               <div class="mb-3">
-                <label class="form-label">phone</label>
-                <input v-model="editContact.phone" class="text" required></input>
+                <label class="form-label">เบอร์โทร</label>
+                <input v-model="editStudent.phone" class="text" required></input>
               </div>
               <div class="mb-3">
                 <label class="form-label">อีเมล</label>
-                <input v-model="editContact.email" type="email" class="form-control" required>
+                <input v-model="editStudent.email" type="email" class="form-control" required>
               </div>
               <button type="submit" class="btn btn-success">
                 {{ isEditMode ? "บันทึกการแก้ไข" : "เพิ่มนักศึกษา" }}
@@ -93,9 +97,10 @@ export default {
     const error = ref(null);
     const editStudent = ref({});
     const isEditMode = ref(false);
+    const originalStudentId = ref(null);
     let editModal = null;
 
-    const fetchContacts = async () => {
+    const fetchStudents = async () => {
       try {
         const response = await fetch("http://localhost/midtest_68701965_ict123/php_api/student_crud.php?action=read");
 
@@ -106,7 +111,7 @@ export default {
         const result = await response.json();
 
         if (result.success) {
-          contacts.value = result.data;
+          students.value = result.data;
         } else {
           error.value = result.message;
         }
@@ -118,13 +123,14 @@ export default {
     };
 
     onMounted(() => {
-      fetchContacts();
+      fetchStudents();
       const modalEl = document.getElementById("editModal");
       editModal = new window.bootstrap.Modal(modalEl);
     });
 
     const openAddModal = () => {
       isEditMode.value = false;
+      originalStudentId.value = null;
       editStudent.value = {
         student_id: "",
         first_name: "",
@@ -137,7 +143,8 @@ export default {
 
     const openEditModal = (student) => {
       isEditMode.value = true;
-      editContact.value = { ...student };
+      originalStudentId.value = student.student_id;
+      editStudent.value = { ...student };
       editModal.show();
     };
 
@@ -149,7 +156,10 @@ export default {
         const response = await fetch(url, {
           method,
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(editStudent.value)
+          body: JSON.stringify({
+            ...editStudent.value,
+            current_student_id: originalStudentId.value
+          })
         });
 
         const result = await response.json();
